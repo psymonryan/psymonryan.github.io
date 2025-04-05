@@ -1,15 +1,17 @@
 ---
 title: Time to Post
 date: 2024-05-31 14:00:00 +1000
-categories: [general]
-tags: [blurb]
+categories:
+  - general
+tags:
+  - blurb
 ---
 
 # Finally It's Time to Post again
 
 There are currently several Articles trying to escape from my brain, and I think it is time to do something about it!
 
-Okay, firstly, it's been a very, very long time since I did any public posting at all, of any kind. In fact, I think it was probably around 2016 that I last posted, and I have been very busy since. (Thanks FirstWave)
+Okay, firstly, it's been a very, very long time since I did any public posting at all, of any kind. In fact, I think it was probably around 2016 that I last posted, and I have been very busy since. (Thanks [FirstWave](https://firstwave.com))
 
 Back then I was posting using Google's Blogger which provided me with a nice little blogging domain called [timedistort.blogspot.com](https://timedistort.blogspot.com/)
 
