@@ -18,7 +18,7 @@ It turns out that what we need is [User Namespace Remapping](https://docs.docker
 How many of us use the official nginx container? Ok lots of people, a quick glance on dockerhub and we see that it has chalked up more than a Billion downloads. :sweat_smile:
 
 
-![alt text](<../assets/pimg/nginx downloads on docker hub.png>)
+![NGINX](<../assets/pimg/nginx downloads on docker hub.png>)
 
 However, the official image (and even the [Official Docker NGINX unprivileged image⁠](https://hub.docker.com/r/nginxinc/nginx-unprivileged)) don't offer us any immediate solution.
 
