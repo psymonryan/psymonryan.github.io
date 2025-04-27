@@ -9,6 +9,8 @@ tags:
 ---
 ## From Monolith to Modules: A Step-by-Step Guide to JavaScript Refactoring with RequireJS
 
+![Refactoring](<../assets/pimg/EnModularisation.png>)
+
 **Target Audience**: This article is for beginning JavaScript developers familiar with the basics of
 [RequireJS](https://requirejs.org/).
 You have probably already read a few other introductory posts elsewhere, but these articles covered starting
