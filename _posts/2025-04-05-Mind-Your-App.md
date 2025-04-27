@@ -5,7 +5,7 @@ categories:
   - mindmap
   - development
 tags:
-  - mission
+  - ithoughtsx
 ---
 
 ## Recreating iThoughtsX for Multi-Platform 

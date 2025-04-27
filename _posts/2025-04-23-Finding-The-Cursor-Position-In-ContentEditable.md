@@ -3,9 +3,10 @@ title: Finding The Cursor Position In ContentEditable
 date: 2025-04-21 12:00:00 +1000
 categories:
   - html5
+  - javascript
   - development
 tags:
-  - mission
+  - ithoughtsx
   - printf_debugging
 ---
 ## Unraveling the Cursor Position: Navigating Edge Cases
