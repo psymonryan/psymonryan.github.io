@@ -1,61 +1,64 @@
-# Chirpy Starter
+# Simon's Blog
 
-[![Gem Version](https://img.shields.io/gem/v/jekyll-theme-chirpy)][gem]&nbsp;
-[![GitHub license](https://img.shields.io/github/license/cotes2020/chirpy-starter.svg?color=blue)][mit]
+A personal technical blog built with [Jekyll](https://jekyllrb.com/) and hosted on GitHub Pages.
 
-When installing the [**Chirpy**][chirpy] theme through [RubyGems.org][gem], Jekyll can only read files in the folders
-`_data`, `_layouts`, `_includes`, `_sass` and `assets`, as well as a small part of options of the `_config.yml` file
-from the theme's gem. If you have ever installed this theme gem, you can use the command
-`bundle info --path jekyll-theme-chirpy` to locate these files.
+## About
 
-The Jekyll team claims that this is to leave the ball in the user’s court, but this also results in users not being
-able to enjoy the out-of-the-box experience when using feature-rich themes.
+This is Simon Ryan's technical blog where I share insights, tips, and tutorials on topics including:
 
-To fully use all the features of **Chirpy**, you need to copy the other critical files from the theme's gem to your
-Jekyll site. The following is a list of targets:
+- **Artificial Intelligence & Machine Learning**
+- **Linux Systems**
+- **Cloud Technologies**
+- **Software Development**
+- **DevOps & Automation**
+- **Web Development**
 
-```shell
-.
-├── _config.yml
-├── _plugins
-├── _tabs
-└── index.html
-```
+The blog follows the philosophy: *"If it takes longer than 30 minutes to figure out, document it!"*
 
-To save you time, and also in case you lose some files while copying, we extract those files/configurations of the
-latest version of the **Chirpy** theme and the [CD][CD] workflow to here, so that you can start writing in minutes.
+## Technology Stack for this Blog
 
-## Prerequisites
-
-Follow the instructions in the [Jekyll Docs](https://jekyllrb.com/docs/installation/) to complete the installation of
-the basic environment. [Git](https://git-scm.com/) also needs to be installed.
-
-## Installation
-
-Sign in to GitHub and [**use this template**][use-template] to generate a brand new repository and name it
-`USERNAME.github.io`, where `USERNAME` represents your GitHub username.
-
-Then clone it to your local machine and run:
-
-```console
-$ bundle
-```
-
-## Usage
-
-Please see the [theme's docs](https://github.com/cotes2020/jekyll-theme-chirpy#documentation).
-
-## Contributing
-
-The contents of this repository are automatically updated when new releases are made to the [main repository][chirpy].  
-If you have problems using it, or would like to participate in improving it, please go to the main repository for feedback!
+- **Static Site Generator**: [Jekyll](https://jekyllrb.com/)
+- **Theme**: [Chirpy](https://github.com/cotes2020/jekyll-theme-chirpy)
+- **Hosting**: GitHub Pages
+- **CI/CD**: GitHub Actions (automated build and deploy on push to main)
 
 ## License
 
-This work is published under [MIT][mit] License.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-[gem]: https://rubygems.org/gems/jekyll-theme-chirpy
-[chirpy]: https://github.com/cotes2020/jekyll-theme-chirpy/
-[use-template]: https://github.com/cotes2020/chirpy-starter/generate
-[CD]: https://en.wikipedia.org/wiki/Continuous_deployment
-[mit]: https://github.com/cotes2020/chirpy-starter/blob/master/LICENSE
+The Chirpy theme is licensed under MIT - see [Chirpy License](https://github.com/cotes2020/jekyll-theme-chirpy/blob/master/LICENSE) for details.
+
+## Links
+
+- **Website**: [https://psymonryan.github.io](https://psymonryan.github.io)
+- **GitHub**: [https://github.com/psymonryan](https://github.com/psymonryan)
+- **Twitter**: [https://twitter.com/psymonryan](https://twitter.com/psymonryan)
+
+## Writing Workflow
+
+My writing process involves:
+
+1. **Mind Mapping**: Using iThoughtsX to organize ideas
+2. **Documentation**: Keeping a knowledge base of solutions that take >30 minutes to figure out
+3. **Exporting**: Converting mind maps to Markdown
+4. **Publishing**: Committing to GitHub triggers automated deployment via GitHub Actions
+
+## Philosophy
+
+> "If it is still in my head, it messes with my thinking. If it is in a storage system, then it is permanently searchable (and publishable)."
+
+This blog is part of my broader documentation system that includes:
+
+- **Daily Journal**: Chronological tracking of work and ideas
+- **Projects Map**: Contextual organization of project-related information
+- **Knowledge Base**: Solutions to problems that took significant time to resolve
+
+By documenting and sharing this knowledge, I aim to:
+
+- Help others avoid similar pitfalls
+- Create a searchable archive of solutions
+- Foster a community of learning and growth
+
+---
+
+*Built with Jekyll and the Chirpy Theme*
