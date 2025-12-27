@@ -1,13 +1,14 @@
---- 
-layout: post 
-title: "Blog Post Template" 
-date: 2025-05-20 00:00:00 +0000 
-last_modified_at: 2025-05-20 00:00:00 +0000 
-categories: [Template] 
-tags: [template, markdown, blog] 
+---
+title: Blog Post Template
+date: 2025-12-27 00:00:00 +0000
+last_modified_at: 2025-12-27 00:00:00 +0000
+categories:
+  - Troubleshooting
+tags:
+  - debugging
 --- 
 
-This is a template for my blog posts. It includes examples of all the different markdown artifacts I've used so far, such as warning text, code blocks, images, and more. 
+This is a template for my blog posts. It includes examples of all the different markdown artefacts I've used so far, such as warning text, code blocks, images, and more. 
 
 ## Introduction 
 
@@ -42,7 +43,7 @@ def hello_world():
 
 Here is an example of an image:
 
-![Alt text]({{ site.baseurl }}/assets/img/favicons/favicon-32x32.png "Favicon")
+![Nginx Docker Hub downloads]({{ site.baseurl }}/assets/pimg/nginx downloads on docker hub.png "Nginx Docker Hub Statistics")
 
 ### Section 4: Warning Text 
 

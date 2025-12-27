@@ -22,6 +22,72 @@ The blog follows the philosophy: *"If it takes longer than 30 minutes to figure 
 - **Hosting**: GitHub Pages
 - **CI/CD**: GitHub Actions (automated build and deploy on push to main)
 
+## Setup and Configuration
+
+### Installing Ruby
+To avoid using the old macOS Ruby version, install a newer version:
+
+```bash
+sudo port install chruby ruby-install
+ruby-install ruby 3.1.3
+```
+
+Add these to your `~/.bashrc`:
+```bash
+source /opt/local/share/chruby/chruby.sh
+source /opt/local/share/chruby/auto.sh
+```
+
+Then activate the new Ruby version:
+```bash
+chruby ruby-3.1.3
+chruby  # Shows the current version
+# or: ruby --version (should show 3.1.3, not macOS 2.6)
+```
+
+### Installing Jekyll
+```bash
+gem install jekyll
+```
+
+### Cloning the Blog
+```bash
+git clone https://github.com/cotes2020/chirpy-starter psymonryan.github.io
+cd psymonryan.github.io
+bundle  # Pulls in gem dependencies
+```
+
+### Running Locally
+```bash
+bundle install  # Install Ruby dependencies if needed
+bundle exec jekyll serve --livereload --drafts --host=0.0.0.0
+```
+
+The blog will be available at `http://localhost:4000`
+
+### Adding Images
+Drag images to the appropriate folder in the sidebar, then drag them from the folder into your Markdown file - it will auto-link them for you.
+
+### Upgrading Chirpy
+See the [Chirpy Upgrade Guide](https://github.com/cotes2020/jekyll-theme-chirpy/wiki/Upgrade-Guide) for upgrade instructions.
+
+### Extras Added
+
+#### Emoji Support
+Add to `Gemfile`, then run `bundle`:
+```ruby
+gem "jemoji"
+```
+
+Add to `_config.yml`:
+```yaml
+plugins:
+  - jemoji
+```
+
+#### Meta Description
+The first heading becomes the meta description when published, so make it long and keyword-rich for search engines.
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
