@@ -13,7 +13,7 @@ This is Simon Ryan's technical blog where I share insights, tips, and tutorials 
 - **DevOps & Automation**
 - **Web Development**
 
-The blog follows the philosophy: *"If it takes longer than 30 minutes to figure out, document it!"*
+The blog follows the philosophy: *"If it takes longer than 30 minutes to figure out, share it!"*
 
 ## Technology Stack for this Blog
 
