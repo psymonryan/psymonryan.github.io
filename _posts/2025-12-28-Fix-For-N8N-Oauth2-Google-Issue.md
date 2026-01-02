@@ -38,12 +38,12 @@ This setup works for most N8N use cases, but it causes issues with OAuth2 becaus
 
 ## The Problem
 
-When attempting to authenticate with Google Calendar using the OAuth2 credential, I received:
+When attempting to authenticate with Google Calendar using the OAuth2 credential, the popup would open correctly, but would contain the following message in json:
 ```
 "status: error, message: unauthorized"
 ```
 
-This stops token renewal and makes the Google Calendar node unusable.
+This stopped the token renewal and made my Google Calendar node unusable.
 
 ## Troubleshooting Attempts
 
@@ -93,7 +93,9 @@ I systematically tried numerous approaches from the docs and various Google and 
 ## The Discovery
 
 ![Working Local Callback](<../assets/pimg/working local callback.png>)
-![[assets/pimg/attempt to fix Google Calendar Oauth2.png]]
+
+![Non-working External Callback](<../assets/pimg/attempt to fix Google Calendar Oauth2.png>)
+
 During testing, I noticed an important difference:
 - Internal callback: `https://n8n.local.lab/rest/oauth2-credential/callback` returned HTML about missing parameters
 - External callback: `https://mypublicdomain.com/rest/oauth2-credential/callback` returned the JSON error
