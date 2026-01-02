@@ -1,5 +1,5 @@
 ---
-title: "n8n OAuth2 'status: error, message: unauthorised' with Google Calendar Credential [Solved]"
+title: "n8n OAuth2 'status: error, message: unauthorised' with Google Calendar [Solved]"
 date: 2025-12-27 00:00:00 +0000
 last_modified_at: 2025-12-27 00:00:00 +0000
 categories:
@@ -19,224 +19,143 @@ tags:
 
 ## Introduction
 
-I just learned that always using `:latest` on my docker images may not be such a good idea :smile:
+After my n8n Docker container silently upgraded to version 2.1.4, I started receiving persistent OAuth2 authentication failures when connecting to Google Calendar. The error message `"status: error, message: unauthorised"` appeared consistently, despite the workflow having worked perfectly for months.
 
-When my swarm stack recently restarted, it silently upgraded n8n to version 2.1.4, after which I encountered persistent OAuth2 authentication failures when trying to connect to Google Calendar. Despite trying numerous troubleshooting steps, the issue remained unresolved until I discovered a critical change in n8n's authentication behaviour starting from version 2.0.
+What made this particularly frustrating was that my setup differs from most n8n deployments - I run n8n on an internal domain and proxy external requests through an existing website domain. This architecture works well for most use cases, but it creates specific challenges with OAuth callbacks.
 
-This post documents my frustrating journey ruling out every suggestion I could find using [Google](https://www.google.com/), [Bing](https://www.bing.com/), [Perplexity](https://www.perplexity.ai/), and even [ChatGPT](https://chat.openai.com/).
+## My Unique Setup
 
-Finally, by chance I noticed some weird behaviour that allowed me to query the source code via [DeepWiki](https://deepwiki.com/), which led me to the solution.
+My n8n deployment uses:
+- **Internal domain**: `n8n.local.lab` (accessible only on my internal network)
+- **External proxy**: Requests from the internet go through `mypublicdomain.com` via Traefik
+- **No public exposure**: I don't expose n8n directly to the internet
 
-Of course, the solution was clearly documented in the [n8n release notes](https://docs.n8n.io/release-notes/), but it was completely "unfindable" when searching for the symptoms of the issue.
+This setup works for most n8n features, but it causes issues with OAuth because:
+- n8n assumes the domain you log in from is the same domain that receives OAuth callbacks
+- Google OAuth requires authorized redirect URIs
+- Internal domains with self-signed certificates cause browser security issues
 
 ## The Problem
 
-When attempting to authenticate with Google Calendar in n8n using the OAuth2 credential, I consistently received a `"status: error, message: unauthorised"` response in the authentication popup. This prevented me from renewing the OAuth token, which had been working without issues for a long time.
+When attempting to authenticate with Google Calendar using the OAuth2 credential, I received:
+```
+"status: error, message: unauthorised"
+```
 
-
-![Attempt to fix Google Calendar OAuth2]({{ site.baseurl }}/assets/pimg/attempt to fix Google Calendar Oauth2.png "Attempting various fixes")
+This prevented token renewal and made the Google Calendar node unusable.
 
 ## Troubleshooting Attempts
 
-I tried numerous approaches to resolve the issue:
+I systematically tried numerous approaches:
 
-### 1. Re-creating OAuth Credentials
+### OAuth Credential Configuration
+- Recreated the n8n Google Calendar credential
+- Generated new OAuth client ID and secret
+- Verified redirect URI matched exactly between Google Cloud Console and n8n
 
-- Recreated the n8n Google Calendar credential using the existing Client ID
-- Generated new OAuth client ID and secret in Google Cloud Console
-- Verified the redirect URI matched exactly between Google Cloud Console and n8n
+### Google Cloud Console Settings
+- Changed OAuth app from "Testing" to "Production" mode
+- Deleted and recreated the app
+- Added required scopes (which had disappeared for some reason): `https://www.googleapis.com/auth/calendar`
 
-### 2. Google Cloud Console Configuration
+### Version Testing
+- Rolled back to version 2.0.1
+- Tried version 2.1.2
+- Tested current version 2.1.4
 
-- Changed the Google OAuth app from "Testing" to "Production" mode
+### Debugging
+- Enabled debug logging (no useful information)
+- Checked Traefik logs
+- Tested callback URLs directly with wget
+- Verified network connectivity
 
-![Google App in Production]({{ site.baseurl }}/assets/pimg/google app - in production.png "Google OAuth app configuration")
-
-- Deleted and recreated the app with a new name ("NEW N8N")
-- Added missing scopes back (they were empty in the console)
-- Verified required scopes: `https://www.googleapis.com/auth/calendar`
-
-![Correct Google Scopes]({{ site.baseurl }}/assets/pimg/correct google scopes.png "Correct Google Calendar scopes")
-
-### 3. n8n Version Rollback (and forward)
-
-- Rolled back to version 2.0.1 (I presumed this was the previously working version, where as it must have been < v2)
-- I also tried version 2.1.2
-- Reverted back to 2.1.4
-
-### 4. Debugging and Logging
-
-- Enabled debug logging in n8n - this provided no useful information at the instant of the callback issue
-- Checked Traefik logs for anything unusual
-- Tested direct access to callback URL using wget
-- Verified container network connectivity
-
-### 5. Browser and Environment Issues
-
+### Browser and Environment
 - Tested in incognito mode
 - Cleared cookies and cache
 - Tried different browsers
-- Verified there were no trailing slash issues in URLs
+- Checked for URL trailing slash issues
 
-### 6. Reverse Proxy Configuration
+### Reverse Proxy Configuration
+- Verified X-Forwarded headers
+- Modified Traefik middleware
+- Tested different N8N_HOST values
 
-- Checked X-Forwarded headers
-- Modified Traefik middleware to ensure proper header forwarding
-- Tried different N8N_HOST values
+### Workarounds
+- **URL Shortener**: Tried *redirectmeto.com* - Google rejected it (URL shorteners not allowed)
+- **Internal Subdomain**: Created subdomain pointing to internal IP - broke external webhooks and caused certificate issues
 
-## A Clue is Found!
+## The Discovery
 
-During testing, I noticed something interesting. When I removed the parameters from the callback URI:
+During testing, I noticed an important difference:
+- Internal callback: `https://n8n.local.lab/rest/oauth2-credential/callback` returned HTML about missing parameters
+- External callback: `https://mypublicdomain.com/rest/oauth2-credential/callback` returned the JSON error
 
-- The internal local callback URI `https://n8n.local.lab/rest/oauth2-credential/callback` worked (as in gave me a nice HTML response about how the parameters were missing)
-- The external Traefik proxied callback URI `https://n8n.smartblackbox.com/rest/oauth2-credential/callback` failed
+This suggested that n8n was treating requests differently based on authentication state.
 
-![working local callback]({{ site.baseurl }}/assets/pimg/working local callback.png "Working local callback")
+## Root Cause
 
-This suggested that n8n was treating internal and external requests differently based on the source IP.
+Starting with n8n v2.0, the default behavior changed:
+- **Before v2.0**: `N8N_SKIP_AUTH_ON_OAUTH_CALLBACK=true` (default)
+- **From v2.0**: `N8N_SKIP_AUTH_ON_OAUTH_CALLBACK=false` (default)
 
-In my case, requests from `outside` get proxied via Traefik and end up arriving with a 172.x.x.x source address, whereas my internal network (192.168.x.x) is considered "trusted".
-
-## Understanding the Authentication Flow
-
-Through DeepWiki's source code analysis, I gained a deeper understanding of how n8n handles OAuth callbacks with authentication:
-
-### When `N8N_SKIP_AUTH_ON_OAUTH_CALLBACK=false`:
-1. **Authentication middleware runs first**: The `createAuthMiddleware()` function in `auth.service.ts` checks for valid authentication cookies/tokens (lines 95-146)
-2. **If authentication fails**: Returns JSON `{"status": "error", "message": "Unauthorized"}` and stops processing (line 145)
-3. **If authentication succeeds**: Continues to OAuth callback handler, which then validates OAuth parameters
-
-### When `N8N_SKIP_AUTH_ON_OAUTH_CALLBACK=true`:
-1. **Auth middleware is skipped**: The `skipAuth: skipAuthOnOAuthCallback` parameter in the `@Get` decorator bypasses authentication (`oauth2-credential.controller.ts:38`)
-2. **OAuth handler runs directly**: Checks for required OAuth parameters (`code` and `state`) and returns "Insufficient parameters for OAuth2 callback" if missing (`oauth2-credential.controller.ts:41-48`)
-
-### Why Endpoints Behave Differently
-
-The difference between my endpoints when `skipAuthOnOAuthCallback=false`:
-- **External endpoint (mydomain.com)**: No valid authentication cookie/token present → auth middleware fails → JSON error response
-- **Internal endpoint (n8n.local.lan)**: Has valid authentication (or different cookie domain settings) → auth passes → reaches OAuth parameter validation
-
-The "awareness" of different connection methods is simply the authentication middleware intercepting requests before they reach the OAuth callback logic.
-
-### Validation of this Conclusion
-
-- I Deleted the cookies for theinternal domain to confirm authentication was the root cause
-- Verified that the issue occurred because authentication cookies were tied to the login domain (`n8n.local.lab`) but OAuth callbacks arrived from different domains
-- ie: the root cause: not being logged in to the domain where the callback arrives
-
-### 8. Workarounds Attempted
-
-After discovering the authentication issue, I attempted several workarounds:
-
-#### Attempt 1: URL Shortener
-- Tried using `redirectmeto.com` as a redirect URI so I could give a 'real' domain to google, but end up on my internal (and authenticated) domain after the redirects
-- Google rejected this: "Redirect URIs cannot contain URL shortener domains"
-
-#### Attempt 2: Internal Subdomain
-- Created a subdomain of my public domain with an A record pointing to internal IP (192.168.X.XX)
-- This required changing `WEBHOOK_URL`, which broke all external webhooks needing the working external URI
-- I tried the oauth redirect anyway but it ended up on my internal domain which of course has a self-signed certificate
-- Browsers refused to accept this, including Chrome due to HSTS errors
-- Decided this was getting too hacky and abandoned this approach
+The authentication middleware now runs before OAuth callback handling. When I logged in to the internal domain but OAuth callbacks arrived externally, the authentication check failed because:
+- Authentication cookies were tied to `n8n.local.lab`
+- External callbacks arrived without valid authentication
+- The middleware returned `{"status": "error", "message": "Unauthorized"}` before reaching OAuth logic
 
 ## The Solution
 
-With this understanding, the root cause became clear. The authentication check happens before any OAuth-specific logic, and Google's OAuth flow doesn't support an additional authentication layer for the callback.
-
-It turns out that n8n changed its default authentication behaviour for OAuth callbacks starting from version 2.0:
-
-- **Before n8n v2.0**: The default was `N8N_SKIP_AUTH_ON_OAUTH_CALLBACK=true`
-- **From n8n v2.0 onwards**: The default is `N8N_SKIP_AUTH_ON_OAUTH_CALLBACK=false`
-
-### Implementation
-
-The fix seemed straightforward - add the environment variable to skip authentication on OAuth callbacks:
-
+The fix should have been simple - set the environment variable:
 ```bash
 N8N_SKIP_AUTH_ON_OAUTH_CALLBACK=true
 ```
 
-However, for some reason it was still not working and I was again getting the same `unauthorized` message for the redirect URI
+However, this didn't work initially. After extensive code analysis, I discovered that the Docker container packaging had a discrepancy - it was still performing user authentication on callbacks even when the flag was set.
 
-After many many hours of going through the code, it turns out there is a bug in the Docker container packaging. While the n8n source code shows valid checks to skip authentication, the actual code in the Docker container still performs user authentication on the callback, even when this flag was set. This suggests there may be a discrepancy between the source and the packaged version.
+### Workaround
 
-## Conclusion
+I had to patch the Docker container to properly skip authentication when the flag was set. This involved modifying the authentication middleware to respect the `N8N_SKIP_AUTH_ON_OAUTH_CALLBACK` setting.
 
-This issue highlights several important lessons:
+## Key Lessons
 
-1. **Always check release notes** for breaking changes before upgrading software
-2. **Avoid using `:latest` tags** in production - pin to specific versions
-3. **Methodically eliminate possibilities** ("The Process of Elimination") when troubleshooting complex issues
-4. **Understand your authentication flow** when using reverse proxies
-5. **The Source is the Authoritative document** DeepWiki really shines in cases where documentation is lacking or the internet is flooded with AI Slop articles
-6. **n8n is designed for same-domain authentication** - The architecture assumes you log in and use OAuth callbacks from the same domain
-
-In the end, the solution required just a single environment variable change, but the debugging process involved many hours of testing various configurations. The key was recognising the authentication middleware's role in intercepting OAuth callbacks.
+1. **Check release notes** for breaking changes before upgrading
+2. **Avoid `:latest` tags** in production - pin to specific versions
+3. **Understand authentication flows** when using reverse proxies
+4. **n8n assumes same-domain authentication** - callbacks should come from the same domain you log in from
+5. **Source code analysis** is invaluable when documentation is lacking
 
 ## Architectural Implications
 
-This experience revealed an important architectural consideration: **n8n is fundamentally designed to have the callback on the same site where you log in**. This makes sense from a security perspective, as it maintains consistent authentication state across the OAuth flow.
+This issue reveals that n8n's architecture assumes:
+- You log in and use OAuth from the same domain
+- Authentication state is maintained across the OAuth flow
 
-For organizations that want to keep n8n accessible only on internal networks, this creates challenges:
+For internal-only deployments, this creates challenges:
+- Google won't allow internal domains in redirect URIs
+- Self-signed certificates cause browser security issues
+- URL shorteners are prohibited
+- Changing `WEBHOOK_URL` breaks external integrations
 
-- **Google won't allow internal domains** in authorized redirect URIs
-- **Self-signed certificates** on internal domains cause browser security issues
-- **URL shorteners are prohibited** by Google's OAuth policies
-- **Changing WEBHOOK_URL** breaks external integrations
-
-The `N8N_SKIP_AUTH_ON_OAUTH_CALLBACK=true` workaround solves the immediate problem but may not be ideal from a security perspective, as it bypasses authentication entirely for OAuth callbacks.
+The `N8N_SKIP_AUTH_ON_OAUTH_CALLBACK=true` setting works as a workaround but bypasses authentication for callbacks.
 
 ## References
 
-1. [n8n Google OAuth2 Single Service Documentation](https://docs.n8n.io/integrations/builtin/credentials/google/oauth-single-service/)
-2. [n8n Release Notes](https://docs.n8n.io/release-notes/)
-3. [Google OAuth 2.0 Documentation](https://developers.google.com/identity/protocols/oauth2)
-4. [Traefik Documentation](https://doc.traefik.io/traefik/)
-5. [DeepWiki - Source Code Search](https://deepwiki.com/)
-6. [Perplexity AI](https://www.perplexity.ai/)
-7. [ChatGPT](https://chat.openai.com/)
+- [n8n Google OAuth2 Documentation](https://docs.n8n.io/integrations/builtin/credentials/google/oauth-single-service/)
+- [n8n Release Notes](https://docs.n8n.io/release-notes/)
+- [Google OAuth 2.0 Documentation](https://developers.google.com/identity/protocols/oauth2)
+- [DeepWiki - Source Code Search](https://deepwiki.com/)
 
 ## Final Thoughts
 
-This experience highlights several important considerations:
+This experience highlights the importance of:
 
-### 1. Breaking Changes and User Awareness
+### Explicit Breaking Changes
+The n8n team made a sensible security improvement, but the change could have been better communicated. Requiring users to explicitly acknowledge breaking changes (e.g., by refusing to start without the new variable set) would reduce silent failures.
 
-The n8n team made a sensible security improvement by requiring authentication on OAuth callbacks starting from version 2.0. However, the way this change was introduced could have been better. When making breaking changes in widely-used tools, it's worth considering ways to force users to explicitly acknowledge the change.
+### Source Code Analysis
+When traditional troubleshooting fails, direct source code analysis becomes essential. Tools like DeepWiki provide immediate access to implementation details that can uncover issues not documented elsewhere.
 
-One approach could be to require users to explicitly set the new environment variable before the application starts. If the variable is undefined, the application could refuse to start with a clear error message explaining what needs to be changed.
+### Architectural Awareness
+Understanding a tool's architectural assumptions is crucial. n8n works best when authentication and OAuth callbacks share the same domain. For internal deployments, this requires careful planning.
 
-**Benefits of this approach:**
-- **Explicit awareness**: Users must actively engage with the change rather than discovering it through silent failures
-- **Clear documentation**: The error message serves as immediate, actionable documentation
-- **Reduced risk**: Production systems won't silently break with different behavior
-
-**Trade-offs:** This creates more friction for users, but for critical infrastructure tools like n8n, this friction might be justified.
-
-### 2. The Importance of Source Code Analysis
-
-While traditional troubleshooting methods (checking logs, testing configurations, searching documentation) are essential, this case demonstrates the value of **direct source code analysis**. Tools like DeepWiki that provide immediate access to the actual implementation can be invaluable when:
-
-- Documentation is incomplete or outdated
-- Search engines return AI-generated content that doesn't address the actual issue
-- The problem involves complex interactions between components
-
-In this case, understanding the exact flow of authentication middleware and OAuth callback handlers was crucial to identifying the root cause.
-
-### 3. Architectural Constraints
-
-This issue revealed that n8n's architecture assumes same-domain authentication for OAuth flows. While this is secure and makes sense for many deployment scenarios, it creates challenges for organizations with specific security requirements:
-
-- Need to keep n8n accessible only on internal networks
-- Use of internal domains with self-signed certificates
-- Strict Google OAuth policies that prohibit workarounds
-
-For such organizations, the `N8N_SKIP_AUTH_ON_OAUTH_CALLBACK=true` setting provides a workaround, but it's important to understand the security implications of bypassing authentication on OAuth callbacks.
-
-### 4. Potential Packaging Bug
-
-During my investigation, I noticed a potential discrepancy between the n8n source code and the Docker container packaging. While the source clearly shows checks to skip authentication when the flag is set, the actual behaviour in the Docker container suggested that user authentication was still being performed on callbacks. This could indicate:
-
-- A bug in the packaging process
-- Outdated code in the container
-- Different build configurations
+For others facing similar issues with internal n8n deployments, the `N8N_SKIP_AUTH_ON_OAUTH_CALLBACK=true` environment variable is the key, though you may need to verify your Docker container properly implements this feature.
