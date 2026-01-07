@@ -14,9 +14,9 @@ timezone: Australia/Melbourne
 # jekyll-seo-tag settings › https://github.com/jekyll/jekyll-seo-tag/blob/master/docs/usage.md
 # ↓ --------------------------
 
-title: Simon Ryan's Blog = Sharing Structured Insights, Documented Solutions and Thoughtful Ponderings  # The main site title 
+title: Simon Ryan's Blog  # The main site title
 
-tagline: If it takes longer than 30 minutes to figure out, share it! # it will display as the sub-title
+tagline: If it takes longer than 30 minutes to figure out, then there is time enough to share it!  # The subtitle
 
 description: >- # used by seo meta and the atom feed
   If it takes longer than 30 minutes to figure out, share it!
