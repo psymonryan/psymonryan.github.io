@@ -23,6 +23,34 @@ API_HOST = "api.indexnow.org"
 API_PATH = "/IndexNow"
 
 POSTS_DIR = "_posts"
+SUBMITTED_FILE = ".in_submitted.txt"
+
+
+def load_submitted_urls():
+    """Load previously submitted URLs from file"""
+    submitted_urls = set()
+
+    if os.path.exists(SUBMITTED_FILE):
+        try:
+            with open(SUBMITTED_FILE, 'r') as f:
+                for line in f:
+                    url = line.strip()
+                    if url:
+                        submitted_urls.add(url)
+        except Exception as e:
+            print(f"Warning: Could not read submitted URLs file: {e}")
+
+    return submitted_urls
+
+
+def save_submitted_urls(url_list):
+    """Append submitted URLs to the tracking file"""
+    try:
+        with open(SUBMITTED_FILE, 'a') as f:
+            for url in url_list:
+                f.write(url + "\n")
+    except Exception as e:
+        print(f"Warning: Could not save submitted URLs: {e}")
 
 
 def find_blog_posts():
@@ -128,41 +156,50 @@ def main():
     print("Finding blog posts...")
     url_list = find_blog_posts()
 
-    if should_submit:
-        print("\nSubmitting to IndexNow...")
-        success = submit_to_indexnow(url_list)
+    # Load previously submitted URLs
+    submitted_urls = load_submitted_urls()
 
-        if success:
-            print("\nSuccessfully submitted URLs to IndexNow!")
+    # Filter out already submitted URLs
+    new_urls = [url for url in url_list if url not in submitted_urls]
+
+    print(f"\nFound {len(url_list)} total URLs")
+    if len(new_urls) < len(url_list):
+        print(f"  ({len(url_list) - len(new_urls)} already submitted)")
+    print(f"  {len(new_urls)} new URLs to submit")
+
+    if should_submit:
+        if len(new_urls) == 0:
+            print("\nNo new URLs to submit. All URLs have already been submitted.")
         else:
-            print("\nFailed to submit URLs to IndexNow.")
+            print("\nSubmitting to IndexNow...")
+            success = submit_to_indexnow(new_urls)
+
+            if success:
+                print("\nSuccessfully submitted URLs to IndexNow!")
+                # Save the newly submitted URLs
+                save_submitted_urls(new_urls)
+            else:
+                print("\nFailed to submit URLs to IndexNow.")
     else:
         # Display a readable version of what will be posted
-        print("\n=== PREVIEW OF WHAT WILL BE SUBMITTED ===")
-        print(f"\nHost: {HOST}")
-        print(f"Key: {KEY}")
-        print(f"Key Location: {KEY_LOCATION}")
-        print(f"\nNumber of URLs: {len(url_list)}")
-        print("\nURLs:")
-        for i, url in enumerate(url_list, 1):
-            print(f"  {i}. {url}")
+        if len(new_urls) == 0:
+            print("\nNo new URLs to submit. All URLs have already been submitted.")
+        else:
+            print("\n=== PREVIEW OF WHAT WILL BE SUBMITTED ===")
 
-        print("\n" + "=" * 50)
-        print("JSON Payload:")
-        print("=" * 50)
+            # Prepare the JSON payload (same as in submit_to_indexnow function)
+            payload = {
+                "host": HOST,
+                "key": KEY,
+                "keyLocation": KEY_LOCATION,
+                "urlList": new_urls
+            }
 
-        # Prepare the JSON payload (same as in submit_to_indexnow function)
-        payload = {
-            "host": HOST,
-            "key": KEY,
-            "keyLocation": KEY_LOCATION,
-            "urlList": url_list
-        }
+            # Pretty print the JSON
+            print(json.dumps(payload, indent=2))
 
-        # Pretty print the JSON
-        print(json.dumps(payload, indent=2))
+            print("\n=== END OF PREVIEW ===")
 
-        print("\n" + "=" * 50)
         print("\nUse --submit flag to actually submit this data to IndexNow.")
         print("Example: python3 submit_to_indexnow.py --submit")
 

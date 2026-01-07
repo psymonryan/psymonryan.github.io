@@ -27,3 +27,4 @@ package-lock.json
 _sass/dist
 assets/js/dist
 .aider*
+.in_submitted.txt
