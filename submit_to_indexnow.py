@@ -17,7 +17,7 @@ import sys
 
 # Configuration
 HOST = "psymonryan.github.io"
-KEY = "e845a0b6f0724cc0a8c2688f092ee917"
+KEY = "4f1f1160dc1c435988263c1b5a43b63b"
 KEY_LOCATION = f"https://{HOST}/{KEY}.txt"
 API_HOST = "api.indexnow.org"
 API_PATH = "/IndexNow"
@@ -128,10 +128,6 @@ def main():
     print("Finding blog posts...")
     url_list = find_blog_posts()
 
-    print(f"\nFound {len(url_list)} URLs:")
-    for url in url_list:
-        print(f"  - {url}")
-
     if should_submit:
         print("\nSubmitting to IndexNow...")
         success = submit_to_indexnow(url_list)
@@ -141,7 +137,33 @@ def main():
         else:
             print("\nFailed to submit URLs to IndexNow.")
     else:
-        print("\nUse --submit flag to actually submit these URLs to IndexNow.")
+        # Display a readable version of what will be posted
+        print("\n=== PREVIEW OF WHAT WILL BE SUBMITTED ===")
+        print(f"\nHost: {HOST}")
+        print(f"Key: {KEY}")
+        print(f"Key Location: {KEY_LOCATION}")
+        print(f"\nNumber of URLs: {len(url_list)}")
+        print("\nURLs:")
+        for i, url in enumerate(url_list, 1):
+            print(f"  {i}. {url}")
+
+        print("\n" + "=" * 50)
+        print("JSON Payload:")
+        print("=" * 50)
+
+        # Prepare the JSON payload (same as in submit_to_indexnow function)
+        payload = {
+            "host": HOST,
+            "key": KEY,
+            "keyLocation": KEY_LOCATION,
+            "urlList": url_list
+        }
+
+        # Pretty print the JSON
+        print(json.dumps(payload, indent=2))
+
+        print("\n" + "=" * 50)
+        print("\nUse --submit flag to actually submit this data to IndexNow.")
         print("Example: python3 submit_to_indexnow.py --submit")
 
 
