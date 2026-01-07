@@ -1,6 +1,7 @@
 ---
 title: Time to Post
 date: 2024-05-31 14:00:00 +1000
+description: After years of absence, I'm back to blogging! Discover how I transitioned from Google Blogger to Jekyll, my documentation philosophy, and why I believe in sharing knowledge that takes more than 30 minutes to figure out.
 categories:
   - general
 tags:

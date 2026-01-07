@@ -2,6 +2,7 @@
 title: Blog Post Template
 date: 2025-12-27 00:00:00 +0000
 last_modified_at: 2025-12-27 00:00:00 +0000
+description: A comprehensive template for creating blog posts with examples of all markdown elements including code blocks, images, warnings, tables, lists, and more. This template serves as a reference for consistent and well-structured blog content.
 categories:
   - Troubleshooting
 tags:

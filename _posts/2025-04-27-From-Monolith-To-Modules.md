@@ -1,6 +1,7 @@
 ---
 title: From Monolith To Modules
 date: 2025-04-27 09:00:00 +1000
+description: A step-by-step guide to refactoring a JavaScript monolith into modular components using RequireJS. Learn about the benefits of modularization, common patterns, and how to structure your code for better maintainability and reusability.
 categories:
   - javascript
   - development

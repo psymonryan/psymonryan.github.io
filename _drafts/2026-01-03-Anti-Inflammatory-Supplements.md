@@ -2,6 +2,7 @@
 title: Evidence-Based Research on Supplements for Inflammation
 date: 2026-01-03 00:00:00 +0000
 last_modified_at: 2026-01-03 00:00:00 +0000
+description: Cutting through the marketing hype to find supplements that actually reduce inflammation based on scientific research. This post examines omega-3 fatty acids, curcumin, vitamin D, and other evidence-based options for managing chronic inflammation.
 categories:
   - Health
   - Wellness
