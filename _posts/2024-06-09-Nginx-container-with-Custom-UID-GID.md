@@ -1,7 +1,7 @@
 ---
 title: Running an Nginx container with a Custom UID and GID
 date: 2024-06-09 14:00:00 +1000
-description: Learn how to run Nginx in Docker with custom user IDs and group IDs to avoid permission issues when mounting volumes. This guide covers User Namespace Remapping and explains why this approach is necessary for production environments.
+description: Learn how to run an Nginx container with custom UID and GID, solving permission issues with host filesystems and implementing user namespace remapping for enhanced security.
 categories: [docker]
 tags: [container]
 ---

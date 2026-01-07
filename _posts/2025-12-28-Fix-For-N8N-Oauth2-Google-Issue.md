@@ -2,7 +2,7 @@
 title: "n8n OAuth2 'status: error, message: unauthorized' with Google Calendar [Solved]"
 date: 2025-12-27 00:00:00 +0000
 last_modified_at: 2025-12-27 00:00:00 +0000
-description: Troubleshooting and fixing OAuth2 authentication issues with Google Calendar API in n8n workflows. This guide covers common errors, correct scope configuration, and step-by-step solutions for successful Google API integration.
+description: Discover how to fix the n8n OAuth2 'status error, message unauthorized' error with Google Calendar by understanding the root cause and implementing the correct solution for internal domain deployments.
 categories:
   - n8n
   - OAuth2

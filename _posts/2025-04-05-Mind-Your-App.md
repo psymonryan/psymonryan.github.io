@@ -1,7 +1,7 @@
 ---
 title: Mind Your App
 date: 2025-04-05 12:00:00 +1000
-description: Exploring the creation of a cross-platform desktop application using Electron.js to recreate the functionality of iThoughtsX, a popular mind mapping tool. This post covers the architecture, challenges, and lessons learned from building a multi-platform app.
+description: Exploring the creation of a cross-platform desktop application to recreate the functionality of iThoughtsX, a previously popular mind mapping tool. This post covers the architecture, challenges, and lessons I'm learning along the way.
 categories:
   - mindmap
   - development

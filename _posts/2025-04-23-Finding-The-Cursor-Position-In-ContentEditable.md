@@ -1,7 +1,7 @@
 ---
 title: Finding The Cursor Position In ContentEditable
 date: 2025-04-21 12:00:00 +1000
-description: A deep dive into the challenges of finding cursor position in contenteditable elements. This post explores edge cases, browser inconsistencies, and provides robust solutions for handling cursor tracking in rich text editors.
+description: Learn how to find the cursor position in ContentEditable elements and implement cursor positioning for enhanced web applications.
 categories:
   - html5
   - javascript
