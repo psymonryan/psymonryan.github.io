@@ -27,9 +27,11 @@ The blog follows the philosophy: *"If it takes longer than 30 minutes to figure 
 ### Installing Ruby
 To avoid using the old macOS Ruby version, install a newer version:
 
+**Note**: Ruby 3.2.9 is recommended for Apple Silicon (M1/M2/M3) Macs. Ruby 3.1.x may have issues with missing extensions like `socket` on newer macOS versions (darwin25+).
+
 ```bash
 sudo port install chruby ruby-install
-ruby-install ruby 3.1.3
+ruby-install ruby 3.2.9
 ```
 
 Add these to your `~/.bashrc`:
@@ -40,9 +42,9 @@ source /opt/local/share/chruby/auto.sh
 
 Then activate the new Ruby version:
 ```bash
-chruby ruby-3.1.3
+chruby ruby-3.2.9
 chruby  # Shows the current version
-# or: ruby --version (should show 3.1.3, not macOS 2.6)
+# or: ruby --version (should show 3.2.9, not macOS 2.6)
 ```
 
 ### Installing Jekyll

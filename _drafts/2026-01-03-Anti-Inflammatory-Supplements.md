@@ -27,7 +27,7 @@ Sound familiar? I've been there too. So, of course, that means that it's time to
 
 Inflammation is your body's natural defense mechanism-like a fire alarm that sounds when it detects trouble. When you cut your finger or fight off a virus, inflammation helps you heal.
 
-The trouble starts when that alarm won't turn off. Chronic, low-level inflammation doesn't just linger-it actively damages healthy tissues. Over time, research shows it contributes to:
+The trouble starts when that alarm won't turn off. Chronic, low-level inflammation doesn't just linger, it actively damages healthy tissues. Over time, research shows it contributes to:
 
 - Heart disease
 - Alzheimer's
@@ -42,29 +42,31 @@ So how do we know if inflammation is an issue? Doctors often look at biomarkers 
 
 These markers are controlled by pathways like NF-κB, which essentially acts as inflammation's on/off switch.
 
-## The Three Supplements That Actually Work according to the Science
+## Three Supplements That Actually Work according to the Science
 
-After digging through PubMed studies, clinical trials, and reputable research, three supplements stand out:
+After digging through PubMed studies, clinical trials, and reputable research, three supplements seem to stand out:
 
 1. **Omega-3 Fatty Acids** - Seems to be the best one
-2. **Curcumin** - Promising but with caveats
-3. **Vitamin D** - Effective if you're deficient (like most indoor workers)
+2. **Curcumin** - Looks promising but with caveats
+3. **Vitamin D** - Effective if you're deficient (I'm usually a member of this club)
 
 For me Curcumin is a bit scarey as its origin plant is Tumeric, which is classed as one of the highest sources of Salicylates. As someone with a self-diagnosed intolerance for this, I really dont want to have a symtom trigger on one issue when I'm trying to fix another, so my plan for this one is to just try a single pill and then wait a few days to check for a reaction. (for me it takes around 3 days to get salicylate symptoms and depending on the severity, they can last two weeks or more.... nope don't want that)
 
+Update: Fears unfounded, it doesnt trigger my salycilate response
+
 ## 1. Omega-3 Fatty Acids
 
-**My take:** This one seems to have the strongest evidence
+This one has oodles of evidence
 
 ### How Omega-3s Work
 
 Omega-3s-specifically EPA (eicosapentaenoic acid) and DHA (docosahexaenoic acid)-work at the molecular level:
 
-- They convert into specialized signaling molecules called **resolvins and protectins**
+- They convert into specialised signaling molecules called **resolvins and protectins**
 - These molecules essentially tell your immune system to "stand down"
 - They interfere with the NF-κB pathway, dialing down inflammation at the genetic level
 
-### What Research Shows
+### Conclusions from Research
 
 The **VITAL study** tracked over 25,000 adults for five years. Key findings:
 
@@ -91,13 +93,11 @@ Most studies used **1.25 to 2.5 grams daily**. One found this range reduced IL-6
 - Those with inflammatory conditions
 - Individuals with elevated inflammation markers
 
-I suspect I fall into this category. I just had blood tests and am waiting for results before publishing this.
-
 Healthy people with low inflammation may see minimal benefits, but omega-3s are generally safe. I tried them years ago and noticed nothing-but I was likely healthier back then.
 
-## 2. Curcumin: The Turmeric Dilemma
+## 2. Curcumin
 
-**My experience:** Curcumin sounds amazing, but the reality is more complicated.
+Actually, my subjective experience shows that the Curcumin suppliments dont contain Salycilates, so its safe for me
 
 ### The Promise
 
@@ -136,14 +136,14 @@ Always look for **third-party tested, certified organic** products.
 
 Curcumin shows promise, but perhaps it's not a reliable solution. If you try it:
 
-- Choose high-quality, bioavailable formulations
+- Choose high-quality, bioavailable formulations (Ok this is obvious!)
 - Start with **500-1000 mg daily**
 - Be patient-effects may take weeks
 - Pair with black pepper or fat to improve absorption
 
-## 3. Vitamin D: The Sunlight Supplement
+## 3. Vitamin D
 
-**My take:** Vitamin D's effectiveness depends on your starting levels. If you're deficient, supplementation is likely to help
+Vitamin D's effectiveness depends on your starting levels. If you're deficient, supplementation is likely to help
 
 ### How It Works
 
@@ -183,6 +183,7 @@ Other research shows:
 ### My Approach
 
 I test my vitamin D levels annually. If optimal (50-80 ng/mL), I skip supplementation. If low, I take **2000-4000 IU daily** until levels improve.
+I've been getting plenty of Sun in the last couple of years, so at the moment, I'm ok on this front.
 
 ## What About Other Supplements?
 
@@ -206,18 +207,18 @@ Research shows cardiovascular benefits, but you'd need to eat **100g of dark cho
 
 **Verdict:** Stick to moderate amounts for enjoyment, not inflammation.
 
-## My Approach
+## Best Approach
 
-After all this research, here's what I actually do:
+After all this research, here's what seems to be the way to do things.
 
 ### 1. Diet Comes First
 
 I prioritize anti-inflammatory foods:
 
-- Fatty fish (salmon, sardines) **2-3 times weekly**
+- Fatty fish (salmon, sardines) **2-3 times weekly** (I'm still a vegetarian, so this one is not for me)
 - Colorful vegetables (leafy greens, peppers, etc.)
 - Nuts, seeds, and healthy fats (olive oil, avocados)
-- Berries (blueberries, raspberries)
+- Berries (blueberries, raspberries) (High in Salycilates, so I substitute these for fresh beetroot)
 
 ### 2. Strategic Supplementation
 
@@ -233,16 +234,7 @@ I prioritize anti-inflammatory foods:
 
 ### 4. The Bigger Picture
 
-Supplements can help, but they're not magic bullets. The foundation is always diet, lifestyle, and addressing root causes-poor diet, lack of sleep, and chronic stress.
-
-## A Word of Caution
-
-Before buying supplements:
-
-1. **Talk to your doctor**, especially if you're on medications
-2. **Get tested**-know your baseline inflammation markers
-3. **Be patient**-supplements work gradually
-4. **Quality matters**-choose third-party tested products
+Supplements can help, but they're not magic bullets. I was surprise at how little evidence there is for most of the suppliments we see on our supermarket shelves.
 
 ## What I'd Like to Research Next
 
@@ -255,27 +247,20 @@ This got me thinking about:
 
 ## References
 
-I want to be transparent about my sources:
-
-1. [Scientific American: Anti-Inflammatory Supplements](https://www.scientificamerican.com/article/three-anti-inflammatory-supplements-can-really-fight-disease/)
-2. [VITAL Study Results](https://www.vitalstudy.org/images/VITAL_Signs_14.pdf)
-3. [PubMed: NF-κB Pathway](https://pubmed.ncbi.nlm.nih.gov/12388359/)
-4. [BMJ: Vitamin D and Autoimmune Disease](https://www.bmj.com/content/376/bmj-2021-066452)
+1. [VITAL Study Results](https://www.vitalstudy.org/images/VITAL_Signs_14.pdf)
+2. [PubMed: NF-κB Pathway](https://pubmed.ncbi.nlm.nih.gov/12388359/)
+3. [BMJ: Vitamin D and Autoimmune Disease](https://www.bmj.com/content/376/bmj-2021-066452)
+4. [Scientific American: Anti-Inflammatory Supplements](https://www.scientificamerican.com/article/three-anti-inflammatory-supplements-can-really-fight-disease-according-to/)
 
 For deeper research, check out:
 
 - [VITAL Study Website](https://www.vitalstudy.org/)
 - [PubMed](https://pubmed.ncbi.nlm.nih.gov/)
-- [Examine.com](https://examine.com/) for unbiased reviews
 
-## Final Thoughts
-
-If this sounds like you, then keep reading:
-
-I've been where you are-overwhelmed by supplement claims and disappointed by results. The key? Focus on what actually works based on solid research, not marketing hype.
+## Finally
 
 **Have you tried any of these supplements?** What were your experiences? I'd love to hear your thoughts in the comments!
 
 ---
 
-*This post is for informational purposes only and doesn't constitute medical advice. Always consult with a healthcare professional before starting supplements.*
+*This post is for informational purposes only and doesn't constitute medical advice. Always consult with a healthcare professional before starting supplements.* (AI inserted this disclaimer for me)
