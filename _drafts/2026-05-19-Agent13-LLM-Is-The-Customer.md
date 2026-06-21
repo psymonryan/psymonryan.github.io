@@ -1,7 +1,7 @@
 ---
 title: "Agent13: Building an AI Agent Harness for low VRAM"
 date: 2026-05-19 1:00:00 +0000
-description: "You don't need a massive context window or a super smart model — you just need to work with the model rather than against it. The journey from frustration with Mistral Vibe to rolling my own Agent13."
+description: "You don't need a massive context window or a super smart model - you just need to work with the model rather than against it. The journey from frustration with Mistral Vibe to rolling my own Agent13."
 categories:
   - Software Development
 tags:
@@ -21,7 +21,7 @@ Before diving into the journey, here are the core insights that shaped Agent13:
 - **Stop writing longer system prompts.** The LLM's training instincts are your fallback, so design tools around them, not against them.
 - **System prompts stay lean and grow conservatively.** The base is just *"You are a tool using AI assistant,"* with extra bits added only as needed based on run-time options.
 - **Full-context compaction breaks small models.** Incremental "journal mode" compaction keeps context lean for the whole session.
-- **Saved journals become cheap, high-fidelity agent "memory"** (10–20K tokens) — better than any Memory MCP server I tried.
+- **Saved journals become cheap, high-fidelity agent "memory"** (10-20K tokens) - better than any Memory MCP server I tried.
 - **154 lines of tool docs cut to ~82.** Every token matters.
 
 ## The LLM is the Customer
@@ -36,7 +36,7 @@ This was the core philosophy I built Agent13 around, and here is what my experie
 
 - Loading up system prompts with rules, guardrails, do's and don'ts just means we burn our precious context up before we even start.
 - The basic instincts of the model don't get lost, they become the fallback. When the model gets confused, it just sticks to what it knows, so why not make this the rule instead of the exception and get it to work the way it 'naturally' works.
-- The LLM's already know how to do things. They have been trained to be AI assistants, so let's keep things simple and just leverage how they already work.
+- The LLMs already know how to do things. They have been trained to be AI assistants, so let's keep things simple and just leverage how they already work.
 
 Ok, with all of that said, here is my system prompt:
 
@@ -49,16 +49,33 @@ If I need it to use tools, I add some more. If I want it to have ability to load
 But even with these 'extra bits' in the system prompt, they are still lean and mean. The next insight is:
 
 > Context is on a "Need to Know Basis"
+{: .prompt-tip }
 
 What does this mean? If the LLM doesn't need to know, then I don't tell it.
 
-For example, the tool description on the read_file tool is very very minimal. I don't tell it upfront about all the amazing different modes it supports — it's going to 'expect' it to work in a certain way anyway, and when it uses the tool 'that way', the tool is designed to understand it, so it just works.
+For example, the tool description on the read_file tool is very very minimal. I don't tell it upfront about all the amazing different modes it supports - it's going to 'expect' it to work in a certain way anyway, and when it uses the tool 'that way', the tool is designed to understand it, so it just works.
 
 Another example: if something goes wrong with a tool call, the tool will do some extra work, and then give a hint back to the agent about where it might find what it is looking for. eg:
 
-> insert tool response for fuzzy match
+```
+Text not found in lines 1-50.
 
-`[image]` {customer service / design thinking illustration}
+Closest fuzzy match (94.2% similarity):
+  Lines 12-13:
+
+  --- SEARCH (what you provided)
+  +++ FOUND (closest match in file)
+
+  - if filepath not in _snapshots:
+  - _snapshots[filepath] = {}
+  + if filepath not in _snapshots:
+  +     _snapshots[filepath] = {}
+
+Debugging tips:
+  1. Check for exact whitespace/indentation match
+  2. Verify line endings match (\r\n vs \n)
+  3. The file may have been modified since you last read it
+```
 
 ### Working with the LLM in Practice
 
@@ -70,9 +87,11 @@ When it got confused or did something wrong, I said something like this:
 
 After a few rounds of this sort of 'reflection' conversation, I need to expound on two major points:
 
-> **LLM's do not have meta-awareness.** They don't know *why* they do things, they just 'rationalise' and give you a reasonable sounding excuse — which can lead us in the wrong direction if you are not careful.
+> **LLMs do not have meta-awareness.** They don't know *why* they do things, they just 'rationalise' and give you a reasonable sounding excuse - which can lead us in the wrong direction if you are not careful.
+{: .prompt-tip }
 
-> **LLM's can 'reflect' on how they went.** They are very good at giving suggestions for how things 'should work' and, guess what, those 'suggestions' are a result of how they are trained.
+> **LLMs can 'reflect' on how they went.** They are very good at giving suggestions for how things 'should work' and, guess what, those 'suggestions' are a result of how they are trained.
+{: .prompt-tip }
 
 Another prompt that worked really well was:
 
@@ -113,8 +132,6 @@ This is important, since tool call results can be MASSIVE and the agent is proba
 
 The end result is that the context stays as a small journal of what the agent is attempting, what it found and where it is up to.
 
-`[image]` {journal / notebook writing}
-
 ### From Compaction to Memory
 
 Now that I have this working, I've realised the implications are huge.
@@ -135,8 +152,6 @@ This means you can resume work on a feature days later. The model already knows 
 
 Ok, I'll shut up about it here :laughing:
 
-`[image]` {file save dialog / session management UI}
-
 ## The Journey to Agent13
 
 ### Starting out with Mistral Vibe
@@ -153,11 +168,10 @@ The key and very obvious issue was that the Qwen and Kimi models just didn't lik
 
 At first I tried the common approach which everyone uses, which is to **prompt** the tools better. This kind of worked but when the context got longer, the models fell back to what they were trained on which was basically 'find this string', 'replace it with this string' rather than Mistral's "use this diff format to change the file" (Ok I'm paraphrasing this for readability).
 
-`[image]` {coding agent terminal interface}
-
 This is where I started to realise:
 
 > If they are ignoring the prompt and doing it their own way, why not accommodate that 'way' and make the tools work the way each model expects
+{: .prompt-tip }
 
 ### Modifying Vibe
 
@@ -167,23 +181,19 @@ So I decided to dive in and make my own local fork of Mistral.
 
 This worked great for a while, until I realised that there were so many things I wanted to change about how it worked, that I was probably better off starting from scratch.
 
-`[image]` {frustrated developer at laptop}
-
 ### Time to Build my own
 
 Building new code with Vibe was great, but there were so many things that frustrated the heck out of me.
 
-- The whole automatic 'full context' compression — my agent would be zipping along merrily and then a compaction would occur and it would end up brain-dead not knowing what it was doing any more. - Ugh!
+- The whole automatic 'full context' compression - my agent would be zipping along merrily and then a compaction would occur and it would end up brain-dead not knowing what it was doing any more. - Ugh!
 - Every new version introduced features I wasn't really interested in, but I ended up spending a lot of time rebasing to their main branch to stay up-to-date.
-- Lots of little UI things I didn't like — too many to mention.
+- Lots of little UI things I didn't like - too many to mention.
 
 So I made the decision to build my own, and keep it super simple with a focus on model agnostic support for small local models (and large ones too of course).
 
 At this point Agent13 was born.
 
-`[image]` {Maxwell Smart themed baby photo maybe}
-
-`[image]` {small laptop with terminal}
+![Baby Agent13]({{ site.baseurl }}/assets/pimg/Agent13 Pram.png "Agent13 as a baby")
 
 ## How It Was Built
 
@@ -201,46 +211,42 @@ Once I had it running, I deliberately stayed within the new code. Occasionally r
 
 If I had a problem, I'd roll back to the last known good and use that to fix the problems until it could run its own latest version again.
 
-`[image]` {ouroboros / snake eating its own tail}
-
 ### Minimalist Architecture
 
 Just a few more words on the philosophy:
 
-- Tools are just functions. Wrapped with decorators for control — nothing fancy.
+- Tools are just functions. Wrapped with decorators for control - nothing fancy.
 - I used the same TUI library as Vibe ([Textual](https://textual.textualize.io/)). (I tried others like [prompt_toolkit](https://github.com/prompt-toolkit/python-prompt-toolkit), but Textual is pretty good.)
 - Design principle: every token matters, short docstrings beat long ones.
 - 154 lines of tool docs reduced to 82ish.
 
 `[table]` before/after docstring comparison
 
-`[image]` {minimalist code editor}
-
 ### The Edit Tool
 
-This tool was the hardest to get right and the most important in terms of token consumption when the model got it wrong. Every failed edit meant retrying, which burned context and sometimes cascaded into confusion. Getting it right was critical.
+This was the hardest tool to get right, and the most important one to get right. Every failed edit meant a retry, which burned context and sometimes cascaded into confusion. Getting it wrong was expensive.
 
-The journey to a reliable edit tool is a perfect case study in the "LLM is the Customer" philosophy — every problem I encountered was solved not by instructing the model better, but by changing the tool to accommodate how the model naturally behaves.
+The edit tool is where the "LLM is the Customer" philosophy got tested the hardest. Every problem I hit, I solved by changing the tool, not by instructing the model better.
 
 #### The Indentation Mystery
 
-The first sign of trouble was corrupted indentation. Edits would come back with the first line of inserted code flushed left, while the remaining lines retained their correct indentation. The obvious suspect was the tool itself — maybe a stray `.strip()` somewhere in the processing pipeline. I spent hours hunting through the code, checking every whitespace-handling function. Nothing. The tool was innocent.
+The first sign of trouble was corrupted indentation. Edits would come back with the first line of inserted code flushed left, while the remaining lines kept their correct indentation. The obvious suspect was the tool itself, maybe a stray `.strip()` somewhere in the processing pipeline. I spent hours hunting through the code, checking every whitespace-handling function. Nothing. The tool was innocent. I felt like an idiot.
 
-Here's where the fact that LLM's have no "meta-awareness" really stood out. When I asked the models about the problem, they confidently insisted they had sent the indentation correctly and that the tool must be stripping it, however the real evidence was in the llama-swap logs, I could see that they were not sending initial indent, despite their post-rationalisation excuses. They genuinely had no awareness that they hadn't emitted those leading spaces.
+This is where the LLMs' lack of meta-awareness really showed. When I asked the models about the problem, they confidently insisted they had sent the indentation correctly and that the tool must be stripping it. But the llama-swap logs told a different story: they were not sending the initial indent, despite their post-rationalisation excuses. They genuinely had no awareness that they hadn't emitted those leading spaces.
 
-The real culprit? TBH: I'm not really sure about this, but I suspect it is the training data. Even though there was plenty of python in the training data, there was never any data with leading whitespace. Most was likely 'complete' python, which of course starts at indent zero.
+The real culprit? Honestly, I'm not sure, but I suspect it's the training data. Even though there was plenty of Python in the training data, there was never any data with leading whitespace. Most was likely 'complete' Python, which of course starts at indent zero.
 
 The takeaway: you can't fix this by telling the model to behave differently. You have to design the tool around the limitation.
 
 #### First-Line-Only Auto-Correct
 
-Once I understood the problem, the solution journey went through several iterations:
+Once I understood the problem, I tried a few things:
 
-- An explicit `indent` parameter → models don't proactively discover it, they only react after failures (token-expensive).
-- Auto-infer indent from context → caused *double* indentation because models still put spaces in the content.
-- Shift all lines by a delta → worked for Qwen (off by ±1) but broke GLM (which strips the first line to 0 but leaves remaining lines correct).
+- An explicit `indent` parameter, models don't proactively discover it, they only react after failures (token-expensive).
+- Auto-infer indent from context, caused *double* indentation because models still put spaces in the content.
+- Shift all lines by a delta, worked for Qwen (off by ±1) but broke GLM (which strips the first line to 0 but leaves remaining lines correct).
 
-The breakthrough insight: **only the first line is ever wrong.** The remaining lines retain their indentation because they're embedded after `\n` characters, which the LLM handles correctly. And critically, different models get the first line wrong in *different ways* — Qwen is off by ±1, GLM strips it to zero — which confirms this is LLM behaviour, not a pipeline issue.
+The key insight: **only the first line is ever wrong.** The remaining lines keep their indentation because they're embedded after `\n` characters, which the LLM handles correctly. And critically, different models get the first line wrong in *different ways*. Qwen is off by ±1, GLM strips it to zero. Which confirms this is LLM behaviour, not a pipeline issue.
 
 The final solution: infer the natural indent from context, correct only the first line, leave the rest alone. Both models succeeded on first attempt.
 
@@ -250,22 +256,23 @@ The most common edit failure was indentation wreckage that the model couldn't se
 
 Two additions solved this:
 
-- **`compile()` validation gate** before writing — rejects invalid Python without modifying the file. (I used `compile()` rather than `ast.parse()` because `ast.parse()` accepts `return` at module level, which would produce broken code.)
-- **Edit preview** in the result — shows a few lines of context before and after the edit region, so the model can verify indentation at a glance without a separate `read_file` call.
+- **`compile()` validation gate** before writing, rejects invalid Python without modifying the file. (I used `compile()` rather than `ast.parse()` because `ast.parse()` accepts `return` at module level, which would produce broken code.)
+- **Edit preview** in the result, shows a few lines of context before and after the edit region, so the model can verify indentation at a glance without a separate `read_file` call.
 
-The design philosophy moment: **the docstring was left unchanged.** The model discovers validation on failure ("Python syntax error... File NOT modified") and preview on success. No new concepts to learn, no prompt changes. The tool just works better and fails more clearly. (Context is on a 'need to know' basis)
+Here's the bit I'm proud of: I left the docstring unchanged. The model discovers validation on failure ("Python syntax error... File NOT modified") and preview on success. No new concepts to learn, no prompt changes. The tool just works better and fails more clearly. (Context is on a 'need to know' basis.)
 
 #### Docstring Trimming: 154 to 82 Lines
 
-This ties back to the "every token matters" principle. The 7 tools' docstrings totalled 154 lines. I cut them to 82 — a 47% reduction.
+This ties back to the "every token matters" principle. The 7 tools' docstrings totalled 154 lines. I cut them to 82, a 47% reduction.
 
 The guiding principle:
 
-> The AI discovers defaults from results, format variants from trying, and behaviour from usage. Docstrings should label what the tool does and name the parameters — not pre-explain everything that will be obvious after one call.
+> The AI discovers defaults from results, format variants from trying, and behaviour from usage. Docstrings should label what the tool does and name the parameters, not pre-explain everything that will be obvious after one call.
+{: .prompt-tip }
 
-One exception: the `delete` mode retained its behavioural note ("deletes the entire line, not just the matched text") because smaller models consistently assumed it removed only the matched substring — a non-obvious behaviour the model can't discover from the result.
+One exception: the `delete` mode kept its behavioural note ("deletes the entire line, not just the matched text") because smaller models consistently assumed it removed only the matched substring, a non-obvious behaviour the model can't discover from the result.
 
-There was also a cautionary tale. The `end_line` parameter description said "Used with start_line" — accurate for `replace_lines` and `delete`, but it actively *taught* the AI that `end_line` alone was invalid for `append` and `prepend`, where it actually works fine. Parameter descriptions should describe what the parameter *is*, not prescribe how it must be combined.
+One thing tripped me up though. The `end_line` parameter description said "Used with start_line", accurate for `replace_lines` and `delete`, but it actively *taught* the AI that `end_line` alone was invalid for `append` and `prepend`, where it actually works fine. Parameter descriptions should describe what the parameter *is*, not prescribe how it must be combined.
 
 ### The Model Stats
 
@@ -273,7 +280,7 @@ So what models did I use and end up using?
 
 - The workhorse was [Qwen 2.5](https://qwenlm.github.io/) 27B which wrote most of the early code.
 - The heavy lifting was done by [Kimi K2](https://github.com/moonshotai/kimi-k2) for tricky problems.
-- The Human model (me) — Leaning over the shoulder of the workhorses for most things. This was fairly intense early on.
+- The Human model (me) - Leaning over the shoulder of the workhorses for most things. This was fairly intense early on.
 - Documentation-driven development: every feature was recorded as a journal:
   - What was the feature goal
   - What did we try
@@ -285,9 +292,9 @@ So what models did I use and end up using?
 
 Agent13 went from frustration with existing tools, through bootstrapping on Mistral Vibe, to a self-hosted agent that develops itself. The journey taught me something that runs counter to the prevailing wisdom in the AI coding assistant space: the answer isn't longer prompts, more guardrails, and bigger context windows. The answer is to stop treating LLMs as misbehaving intelligences that need discipline, and start treating them as collaborators with their own instincts. Work *with* the grain, not against it.
 
-Context is precious — journal it, save it, reuse it. When you stop wasting tokens on verbose instructions and bloated tool results, even small models on low VRAM become remarkably capable.
+Context is precious - journal it, save it, reuse it. When you stop wasting tokens on verbose instructions and bloated tool results, even small models on low VRAM become remarkably capable.
 
-The next chapter for Agent13 is already underway: I'm adding a REPL mode targeted at visually impaired users. One user in particular has been giving me feedback and requesting changes to make the agent easier to use with their screen reader. Making AI coding tools more accessible feels like a natural extension of the same philosophy — work with the user-base, not against them.
+The next chapter for Agent13 is already underway: I'm adding a REPL mode targeted at visually impaired users. One user in particular has been giving me feedback and requesting changes to make the agent easier to use with their screen reader. Making AI coding tools more accessible feels like a natural extension of the same philosophy - work with the user-base, not against them.
 
 ## References
 
@@ -297,6 +304,6 @@ The next chapter for Agent13 is already underway: I'm adding a REPL mode targete
 4. [Qwen 2.5](https://qwenlm.github.io/)
 5. [Kimi K2](https://github.com/moonshotai/kimi-k2)
 6. [Lost in the Middle: How Language Models Use Long Contexts](https://arxiv.org/abs/2307.03172)
-7. [Aider — AI Pair Programming in Your Terminal](https://aider.chat/)
+7. [Aider - AI Pair Programming in Your Terminal](https://aider.chat/)
 8. [opencode](https://github.com/opencode-ai/opencode)
-9. [Textual — Python TUI Framework](https://textual.textualize.io/)
+9. [Textual - Python TUI Framework](https://textual.textualize.io/)
