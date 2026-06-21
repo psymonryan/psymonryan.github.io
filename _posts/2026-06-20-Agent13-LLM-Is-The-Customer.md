@@ -1,6 +1,7 @@
 ---
 title: "Agent13: Building an AI Agent Harness for low VRAM"
-date: 2026-05-19 1:00:00 +0000
+date: 2026-06-20 01:00:00 +0000
+last_modified_at: 2026-06-20 01:00:00 +0000
 description: "You don't need a massive context window or a super smart model - you just need to work with the model rather than against it. The journey from frustration with Mistral Vibe to rolling my own Agent13."
 categories:
   - Software Development
@@ -12,7 +13,12 @@ tags:
   - tool-design
 ---
 
-Making an agent that runs effectively within a small model / small context environment requires a different way of thinking about agent harnesses.
+## Introduction
+
+This article documents the journey of creating [Agent13](https://github.com/psymonryan/agent13), a model-agnostic AI agent harness built for small local models running on low VRAM. What started as frustration with existing tools became an exercise in working *with* LLMs rather than against them.
+
+> Making an agent that runs effectively within a small model / small context environment requires a different way of thinking about agent harnesses.
+{: .prompt-tip }
 
 ## Key Findings
 
@@ -95,21 +101,20 @@ After a few rounds of this sort of 'reflection' conversation, I need to expound 
 
 Another prompt that worked really well was:
 
-> Let's pause here and reflect on how you found the tools during this session. Did they work as expected? Did you find issues? What happened and how did you get around any issues? What suggestions would you make for changes to the tools so they operate in a more intuitive manner? Please update or create the document in the current directory called edit_issues.md and detail your findings with suggestions for improvements.
+> Let's pause here and reflect on how you found the tools during this session. Did they work as expected? Did you find issues? What happened and how did you get around any issues? What suggestions would you make for changes to the tools so they operate in a more intuitive manner? Please update or create a document in the current directory called edit_issues.md and document this journey, journalling what happened, along with your findings and suggestions for improvements.
 
 After a number of iterations of this process I started to see the number of tool failures drastically diminish!
 
 ## Journal Mode: Compaction and Memory
 
-Getting the agent to keep a journal along the way for each feature worked so well, I decided to try to get it to do this style of journalling after each turn and then use the journal as a compacted turn in the message history.
+Getting the agent to keep a journal like this along the way for each feature I worked on, worked so well, I decided to try to get it to do this same style of journalling after each turn and then use the journal entry itself as a compacted turn in the message history.
 
 This works way better than trying to compact the entire message list into a single message in a single turn.
 
 Why?
 
 - Doing small chunks means we keep it small for the life of the session, AND we change the message history in a way that stays friendly to the kv-cache at the backend. (ie: avoid the dreaded 'prompt-processing' delays I was seeing with Mistral Vibe)
-- The traditional compaction approach is to set a threshold and compact the entire history.
-- Trying to get a good summary from an LLM when it is already at the limits of its context length just doesn't work. "Lost in the Middle" kicks in and much of what it did during the session doesn't end up in the summary/compaction.
+- The traditional compaction approach is to set a threshold and compact the entire history. Trying to get a good summary from an LLM when it is already at the limits of its context length just doesn't work. "Lost in the Middle" kicks in and much of what it did during the session doesn't end up in the summary/compaction.
 
 The solution: **journal mode**.
 
@@ -124,7 +129,7 @@ The prompt I use looks like this:
 
 This works **really** well!
 
-Once the LLM has created the 'reflection', this prompt is removed along with the previous turn and all of its associated tool calls, and it is replaced by the LLM's self reflection.
+Once the LLM has created the 'reflection', this prompt is removed along with the previous turn and all of its associated tool calls, and it is replaced by the LLM's self reflection. (ie: I am re-writing history, removing the last two turns (the tool calling turn and the reflection turn) and replacing them with a journal entry.)
 
 This means it keeps a record of what it was thinking / trying in the context, without having to keep all of the tool call results in the context.
 
@@ -138,7 +143,7 @@ Now that I have this working, I've realised the implications are huge.
 
 Each of these journalled sessions represents a 'memory' of everything that was done. I've tried various Memory MCP servers and they all seem to break down over time as the 'memories' become sparse and irrelevant. Even with advanced latent space search techniques, none of these quite beat having exactly what you want already in the context.
 
-So I built save and load commands into the agent. These allow you to work on a 'feature' say, then save the journalled context.
+So I built save and load session commands into the agent. These allow you to work on a 'feature' say, then save the journalled context.
 
 Later when you want to work on that feature again, it's a simple matter of loading the same context into memory, and suddenly the agent has all of the background 'memories' needed for that specific feature.
 
@@ -160,7 +165,7 @@ After working for a while with [Aider](https://aider.chat/) I tried [opencode](h
 
 Mistral Vibe turned out to be a reasonably solid tool. It was built by Mistral (the French company) and optimised for their own models.
 
-Of course, being a lurker on [reddit's LocalLLaMA](https://www.reddit.com/r/LocalLLaMA/) group and a keen advocate of small local privacy-focussed models, I naturally wanted to play around with some of the other very promising looking models that were available (at the time) such as [Qwen 2.5](https://qwenlm.github.io/) and even [Kimi K2](https://github.com/moonshotai/kimi-k2) with a very low quants.
+Of course, being a lurker on [reddit's LocalLLaMA](https://www.reddit.com/r/LocalLLaMA/) group and a keen advocate of small local privacy-focussed models, I naturally wanted to play around with some of the other very promising looking models that were available (at the time) such as [Qwen 2.5](https://qwen.ai/research) and even [Kimi K2](https://github.com/moonshotai/kimi-k2) with a very low quants.
 
 Unfortunately their performance was **Terrible!**. Not because the models were bad, but because they just didn't play nice with Mistral Vibe.
 
@@ -220,8 +225,6 @@ Just a few more words on the philosophy:
 - Design principle: every token matters, short docstrings beat long ones.
 - 154 lines of tool docs reduced to 82ish.
 
-`[table]` before/after docstring comparison
-
 ### The Edit Tool
 
 This was the hardest tool to get right, and the most important one to get right. Every failed edit meant a retry, which burned context and sometimes cascaded into confusion. Getting it wrong was expensive.
@@ -230,7 +233,7 @@ The edit tool is where the "LLM is the Customer" philosophy got tested the harde
 
 #### The Indentation Mystery
 
-The first sign of trouble was corrupted indentation. Edits would come back with the first line of inserted code flushed left, while the remaining lines kept their correct indentation. The obvious suspect was the tool itself, maybe a stray `.strip()` somewhere in the processing pipeline. I spent hours hunting through the code, checking every whitespace-handling function. Nothing. The tool was innocent. I felt like an idiot.
+The first sign of trouble was corrupted indentation. Edits would come back with the first line of inserted code flushed left, while the remaining lines kept their correct indentation. The obvious suspect was the tool itself, maybe a stray `.strip()` somewhere in the processing pipeline. I spent hours hunting through the code, (mine, llama-swap's and llama.cpp) checking every whitespace-handling function. Nothing. The tool was innocent. The bloody LLM's were at fault, and they all seemed to have the issue.
 
 This is where the LLMs' lack of meta-awareness really showed. When I asked the models about the problem, they confidently insisted they had sent the indentation correctly and that the tool must be stripping it. But the llama-swap logs told a different story: they were not sending the initial indent, despite their post-rationalisation excuses. They genuinely had no awareness that they hadn't emitted those leading spaces.
 
@@ -248,7 +251,7 @@ Once I understood the problem, I tried a few things:
 
 The key insight: **only the first line is ever wrong.** The remaining lines keep their indentation because they're embedded after `\n` characters, which the LLM handles correctly. And critically, different models get the first line wrong in *different ways*. Qwen is off by ±1, GLM strips it to zero. Which confirms this is LLM behaviour, not a pipeline issue.
 
-The final solution: infer the natural indent from context, correct only the first line, leave the rest alone. Both models succeeded on first attempt.
+The final solution: infer the natural indent from context, correct only the first line, leave the rest alone. After this change, all models succeeded on the first attempt. :smile:
 
 #### Silent Protection: AST Validation and Edit Previews
 
@@ -259,7 +262,7 @@ Two additions solved this:
 - **`compile()` validation gate** before writing, rejects invalid Python without modifying the file. (I used `compile()` rather than `ast.parse()` because `ast.parse()` accepts `return` at module level, which would produce broken code.)
 - **Edit preview** in the result, shows a few lines of context before and after the edit region, so the model can verify indentation at a glance without a separate `read_file` call.
 
-Here's the bit I'm proud of: I left the docstring unchanged. The model discovers validation on failure ("Python syntax error... File NOT modified") and preview on success. No new concepts to learn, no prompt changes. The tool just works better and fails more clearly. (Context is on a 'need to know' basis.)
+Here's the very cool bit: I left the docstring unchanged. The model discovers validation on failure ("Python syntax error... File NOT modified") and preview on success. No new concepts to learn, no prompt changes. The tool just works better and fails more clearly. (Context is on a 'need to know' basis.)
 
 #### Docstring Trimming: 154 to 82 Lines
 
@@ -276,17 +279,23 @@ One thing tripped me up though. The `end_line` parameter description said "Used 
 
 ### The Model Stats
 
-So what models did I use and end up using?
+So what models did I use and end up using during the build?
 
 - The workhorse was [Qwen 2.5](https://qwenlm.github.io/) 27B which wrote most of the early code.
 - The heavy lifting was done by [Kimi K2](https://github.com/moonshotai/kimi-k2) for tricky problems.
-- The Human model (me) - Leaning over the shoulder of the workhorses for most things. This was fairly intense early on.
-- Documentation-driven development: every feature was recorded as a journal:
-  - What was the feature goal
-  - What did we try
-  - What worked and didn't work
-  - How did we overcome the issues
-  - What was the final choice made and why
+- The Human model (me) - Leaning over the shoulder of the workhorses for most things. This was fairly intense early on, as the smaller models produce more slop code than the larger ones. (but they all do it)
+
+### Documentation Driven Development
+
+As it was developed, every feature was recorded as a journey document:
+
+- What was the feature goal
+- What did we try
+- What worked and didn't work
+- How did we overcome the issues
+- What was the final choice made and why
+
+This means that I can always come back and work on an earlier feature without the agent having to 'rediscover' everything. I have the original session saved (compressed by journalling) and for complex features I also keep the 'journey' document used by the agent during development.
 
 ## Conclusion
 
@@ -294,14 +303,14 @@ Agent13 went from frustration with existing tools, through bootstrapping on Mist
 
 Context is precious - journal it, save it, reuse it. When you stop wasting tokens on verbose instructions and bloated tool results, even small models on low VRAM become remarkably capable.
 
-The next chapter for Agent13 is already underway: I'm adding a REPL mode targeted at visually impaired users. One user in particular has been giving me feedback and requesting changes to make the agent easier to use with their screen reader. Making AI coding tools more accessible feels like a natural extension of the same philosophy - work with the user-base, not against them.
+The next chapter for Agent13 is already underway: I'm adding a REPL mode targeted at visually impaired users. One user in particular has been giving me feedback and requesting changes to make the agent easier to use with their screen reader. 
 
 ## References
 
 1. [Agent13 on GitHub](https://github.com/psymonryan/agent13)
 2. [Mistral Vibe](https://github.com/mistralai/mistral-vibe)
 3. [Devstral 2 and Mistral Vibe CLI announcement](https://mistral.ai/news/devstral-2-vibe-cli/)
-4. [Qwen 2.5](https://qwenlm.github.io/)
+4. [Qwen 2.5](https://qwen.ai/research)
 5. [Kimi K2](https://github.com/moonshotai/kimi-k2)
 6. [Lost in the Middle: How Language Models Use Long Contexts](https://arxiv.org/abs/2307.03172)
 7. [Aider - AI Pair Programming in Your Terminal](https://aider.chat/)
