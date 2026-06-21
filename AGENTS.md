@@ -94,6 +94,7 @@ bundle exec jekyll build
 Commit changes to the `main` branch. GitHub Actions will automatically:
 1. Build the site
 2. Deploy to GitHub Pages
+3. Run the ./submit_to_indexnow.py script
 
 ## Development Environment
 
