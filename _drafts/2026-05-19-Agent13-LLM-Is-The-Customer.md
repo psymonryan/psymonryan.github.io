@@ -218,7 +218,54 @@ Just a few more words on the philosophy:
 
 ### The Edit Tool
 
-*Insert a nice journey here*
+This tool was the hardest to get right and the most important in terms of token consumption when the model got it wrong. Every failed edit meant retrying, which burned context and sometimes cascaded into confusion. Getting it right was critical.
+
+The journey to a reliable edit tool is a perfect case study in the "LLM is the Customer" philosophy — every problem I encountered was solved not by instructing the model better, but by changing the tool to accommodate how the model naturally behaves.
+
+#### The Indentation Mystery
+
+The first sign of trouble was corrupted indentation. Edits would come back with the first line of inserted code flushed left, while the remaining lines retained their correct indentation. The obvious suspect was the tool itself — maybe a stray `.strip()` somewhere in the processing pipeline. I spent hours hunting through the code, checking every whitespace-handling function. Nothing. The tool was innocent.
+
+Here's where the fact that LLM's have no "meta-awareness" really stood out. When I asked the models about the problem, they confidently insisted they had sent the indentation correctly and that the tool must be stripping it, however the real evidence was in the llama-swap logs, I could see that they were not sending initial indent, despite their post-rationalisation excuses. They genuinely had no awareness that they hadn't emitted those leading spaces.
+
+The real culprit? TBH: I'm not really sure about this, but I suspect it is the training data. Even though there was plenty of python in the training data, there was never any data with leading whitespace. Most was likely 'complete' python, which of course starts at indent zero.
+
+The takeaway: you can't fix this by telling the model to behave differently. You have to design the tool around the limitation.
+
+#### First-Line-Only Auto-Correct
+
+Once I understood the problem, the solution journey went through several iterations:
+
+- An explicit `indent` parameter → models don't proactively discover it, they only react after failures (token-expensive).
+- Auto-infer indent from context → caused *double* indentation because models still put spaces in the content.
+- Shift all lines by a delta → worked for Qwen (off by ±1) but broke GLM (which strips the first line to 0 but leaves remaining lines correct).
+
+The breakthrough insight: **only the first line is ever wrong.** The remaining lines retain their indentation because they're embedded after `\n` characters, which the LLM handles correctly. And critically, different models get the first line wrong in *different ways* — Qwen is off by ±1, GLM strips it to zero — which confirms this is LLM behaviour, not a pipeline issue.
+
+The final solution: infer the natural indent from context, correct only the first line, leave the rest alone. Both models succeeded on first attempt.
+
+#### Silent Protection: AST Validation and Edit Previews
+
+The most common edit failure was indentation wreckage that the model couldn't see. The tool would return `{"success": true}` and the model would move on, not knowing the file was now broken.
+
+Two additions solved this:
+
+- **`compile()` validation gate** before writing — rejects invalid Python without modifying the file. (I used `compile()` rather than `ast.parse()` because `ast.parse()` accepts `return` at module level, which would produce broken code.)
+- **Edit preview** in the result — shows a few lines of context before and after the edit region, so the model can verify indentation at a glance without a separate `read_file` call.
+
+The design philosophy moment: **the docstring was left unchanged.** The model discovers validation on failure ("Python syntax error... File NOT modified") and preview on success. No new concepts to learn, no prompt changes. The tool just works better and fails more clearly. (Context is on a 'need to know' basis)
+
+#### Docstring Trimming: 154 to 82 Lines
+
+This ties back to the "every token matters" principle. The 7 tools' docstrings totalled 154 lines. I cut them to 82 — a 47% reduction.
+
+The guiding principle:
+
+> The AI discovers defaults from results, format variants from trying, and behaviour from usage. Docstrings should label what the tool does and name the parameters — not pre-explain everything that will be obvious after one call.
+
+One exception: the `delete` mode retained its behavioural note ("deletes the entire line, not just the matched text") because smaller models consistently assumed it removed only the matched substring — a non-obvious behaviour the model can't discover from the result.
+
+There was also a cautionary tale. The `end_line` parameter description said "Used with start_line" — accurate for `replace_lines` and `delete`, but it actively *taught* the AI that `end_line` alone was invalid for `append` and `prepend`, where it actually works fine. Parameter descriptions should describe what the parameter *is*, not prescribe how it must be combined.
 
 ### The Model Stats
 
